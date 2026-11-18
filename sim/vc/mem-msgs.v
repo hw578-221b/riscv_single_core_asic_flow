@@ -81,6 +81,7 @@ typedef struct packed {
 //------------------------------------------------------------------------
 // Memory Request Message: Trace message
 //------------------------------------------------------------------------
+`ifndef SYNTHESIS
 
 module vc_MemReqMsg4BTrace
 (
@@ -230,6 +231,8 @@ module vc_MemReqMsg16BTrace
 
 endmodule
 
+`endif /* SYNTHESIS */
+
 //========================================================================
 // Memory Response Message
 //========================================================================
@@ -297,6 +300,8 @@ typedef struct packed {
 `define VC_MEM_RESP_MSG_TYPE_AMO_AND    4'd4
 `define VC_MEM_RESP_MSG_TYPE_AMO_OR     4'd5
 `define VC_MEM_RESP_MSG_TYPE_X          4'dx
+
+`ifndef SYNTHESIS
 
 //------------------------------------------------------------------------
 // Memory Response Message: Trace message
@@ -445,6 +450,8 @@ module vc_MemRespMsg16BTrace
   `VC_TRACE_END
 
 endmodule
+
+`endif /* SYNTHESIS */
 
 `endif /* VC_MEM_MSGS_V */
 

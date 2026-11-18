@@ -441,7 +441,7 @@ module lab2_proc_ProcAlt
     end
   end
 
-  `endif
+  `endif /* SYNTHESIS */
 
 endmodule
 

@@ -5,6 +5,8 @@
 `ifndef VC_TRACE_V
 `define VC_TRACE_V
 
+`ifndef SYNTHESIS
+
 // NOTE: This macro is declared outside of the module to allow some vc
 // modules to see it and use it in their own params. Verilog does not
 // allow other modules to hierarchically reference the nbits localparam
@@ -281,6 +283,8 @@ endmodule
 
 `define VC_TRACE_END \
   endtask
+
+`endif /* SYNTHESIS */
 
 `endif /* VC_TRACE_V */
 

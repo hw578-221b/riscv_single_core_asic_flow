@@ -3,8 +3,8 @@
 # This script generates internal power distribution, it does not define power pads, bumps, or an external supply connection.
 # So it's ***not a complete chip-level power-delivery design***.
 
-save_block -as ALU_TOP_power
-open_block ALU_TOP_power
+save_block -as ${NAME}_power
+open_block ${NAME}_power
 
 create_pg_ring_pattern ring_pattern \
     -horizontal_layer metal5 -horizontal_width 1 -horizontal_spacing 1 \
@@ -22,6 +22,7 @@ set_pg_strategy ring_strategy -core \
 # This is the command that actually generates the metal shapes and vias for the specified strategy.
 compile_pg -strategies ring_strategy
 
+# 
 # The entire -layers argument is a nested Tcl list. Each inner group describes one property of a routing layer.
 # vertical_layer: metal6: Create vertical PG stripes on metal6.
 # width: 1: Each stripe is 1 µm wide.
@@ -42,6 +43,7 @@ create_pg_mesh_pattern stripe_pattern -layers {
 set_pg_strategy stripe_strategy -core \
     -pattern {{pattern: stripe_pattern} {nets: {VDD VSS}}} \
     -extension {{stop: outermost_ring}}
+
 compile_pg -strategies stripe_strategy
 
 # creates a pattern for metal1 power rails aligned to standard-cell placement rows.
@@ -56,6 +58,7 @@ set_pg_strategy rail_strategy -core \
     -pattern {{pattern: rail_pattern} {nets: {VDD VSS}}}
 
 # Connect the metal1 rails to the metal6 stripes with stacked vias.
+# {existing: strap} {layers: metal6} Select existing PG straps on M6 (match stripe layer)
 # {strategies: rail_strategy} Match geometry created by the rail strategy
 # {intersection: undefined}	Match intersections not covered by earlier rules
 # {via_master: nil}	Do not insert vias at those unspecified intersections

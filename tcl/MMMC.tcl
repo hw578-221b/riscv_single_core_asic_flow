@@ -22,6 +22,7 @@ create_mode FUNC
 create_corner SS
 create_scenario -name FUNC_SS -mode FUNC -corner SS
 current_scenario FUNC_SS
+# must agree with the definition
 set_process_number 1
 set_voltage 0.95
 set_temperature 125
@@ -42,15 +43,27 @@ set_process_number 1
 set_voltage 1.25 
 set_temperature 0
 
+# Exploratory assumption: 0.1 transitions per clock cycle,
+# with each functional input high for 50% of the interval.
+set activity_inputs \
+    [remove_from_collection [all_inputs] [get_ports {clk reset}]]
+
 # The same functional constraints apply to all three scenarios.
 foreach scenario {FUNC_SS FUNC_TT FUNC_FF} {
     current_scenario $scenario
     set_parasitic_parameters -early_spec RC_TYP -late_spec RC_TYP
     source constraints.tcl
-    # Enable setup and hold analysis
+
+    # Configure for basic dynamic power estimate
+    # Static probability: Fraction of time at logic 1
+    # Toggle rate: Number of transitions per clock period, counting both rising and falling transitions
+    set_switching_activity -static_probability 0.5 -toggle_rate 0.1 -base_clock CLK $activity_inputs
+    # Active-high reset remains deasserted during normal execution.
+    set_switching_activity -static_probability 0.0 -toggle_rate 0.0 [get_ports reset]
+
     # syntax: set_scenario_status <scenario_name> <analysis_options>
-    # -active true: Enable the scenario for analysis/optimization, for example:
-    # -leakage_power true: Enable leakage-power analysis
+    # -active true: Enable the scenario's selected analysis/optimization
+    # for example: -leakage_power true: Enable leakage-power analysis
     set_scenario_status $scenario -active true -setup true -hold true -leakage_power true -dynamic_power true
 }
 

@@ -6,45 +6,52 @@
 
 # suitable for uses such as logical verification
 write_verilog -hierarchy all \
-    -exclude {pg_objects physical_only_cells leaf_module_declarations} outputs/ALU_TOP.v
+    -exclude {pg_objects physical_only_cells leaf_module_declarations} outputs/${NAME}_GL.v
 # retains PG objects and physical-only cells
-write_verilog -hierarchy all -exclude {leaf_module_declarations} outputs/ALU_TOP_pg.v
+write_verilog -hierarchy all -exclude {leaf_module_declarations} outputs/${NAME}_GL_pg.v
 
 # .lef: Design Exchange Format
 # Format	Main information	                Purpose
 # .v	    Cells and logical connectivity	    Logic simulation, equivalence checking
 # .def	    Placement and routing information	Exchange physical-design data between EDA tools
 # .gds	    Actual layer geometry and hierarchy	Physical layout inspection, verification, manufacturing handoff
-write_def outputs/ALU_TOP.def
+write_def outputs/${NAME}.def
 
-# update timing before exporting parasitics and generating reports
+file mkdir report_fc/final_report
+set PATH report_fc/final_report
+
+# update timing before exporting parasitics and generating reports!!!!!!!!!!
 update_timing -full
 
 # Export extracted wire resistance/capacitance in SPEF format
-write_parasitics -format SPEF -output outputs/ALU_TOP
+write_parasitics -format SPEF -output outputs/${NAME}
+
+check_timing > ${PATH}/postRoute_check_timing.rpt
 
 # > is a Synopsys command-interface feature, not a general Tcl language operator
 
 # Separate timing reports and delay files for SS, TT and FF.
 foreach scenario {FUNC_SS FUNC_TT FUNC_FF} {
     current_scenario $scenario
-    # Perform/report maximum-delay (setup-oriented) STA
-    redirect -file reports_fc/${scenario}_setup.rpt { report_timing -delay_type max -max_paths 10 -transition_time}
-    # Perform/report minimum-delay (hold-oriented) STA
-    redirect -file reports_fc/${scenario}_hold.rpt { report_timing -delay_type min -max_paths 10 -transition_time}
-    redirect -file reports_fc/${scenario}_violations.rpt { report_constraints -all_violators }
-    redirect -file reports_fc/${scenario}_power.rpt { report_power }
-    redirect -file reports_fc/${scenario}_check_timing.rpt { check_timing }
+
+    # Perform & report post-routing STA, those two commands also need -scenarios $scenario to get scenario specific analysis!!
+    report_timing -scenarios $scenario -delay_type max -max_paths 10 -transition_time > ${PATH}/${scenario}_setup.rpt
+    report_timing -scenarios $scenario -delay_type min -max_paths 10 -transition_time > ${PATH}/${scenario}_hold.rpt
+
+    report_constraints -all_violators > ${PATH}/${scenario}_violations.rpt
+    report_power > ${PATH}/${scenario}_power.rpt
+    # switching activity report
+    report_activity -verbose > ${PATH}/${scenario}_activity.rpt
     # let you see how the same physical implementation has different characterized delays under SS, TT and FF conditions
-    write_sdf outputs/ALU_TOP_${scenario}.sdf
+    write_sdf outputs/${NAME}_${scenario}.sdf
 }
 
 current_scenario FUNC_TT
-write_sdc -output outputs/ALU_TOP.sdc
+write_sdc -output outputs/${NAME}.sdc
 
 # reports timing-path-group information, area, cell statistics and design-rule violations
 # reports all active scenarios by default
-redirect -file reports_fc/qor.rpt { report_qor }
+redirect -file ${PATH}/qor.rpt { report_qor }
 
 save_block
 save_lib
@@ -53,7 +60,7 @@ save_lib
 # -hierarchy all: includes the design hierarchy and referenced library cells.
 # -lib_cell_view frame: exports the cells' abstract physical views, built from your LEF, instead of full transistor layouts.
 # outputs/ALU_TOP_pnr.gds: specifies the output filename.
-write_gds -hierarchy all -lib_cell_view frame outputs/ALU_TOP_pnr.gds
+write_gds -hierarchy all -lib_cell_view frame outputs/${NAME}_pnr.gds
 
 # In Synopsys's physical libraries, a standard cell can have different views.
 # View	    Contains	                                            Used for

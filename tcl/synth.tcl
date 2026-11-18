@@ -5,15 +5,17 @@ if {![file exists std_cells/NangateOpenCellLibrary_slow.db]} {
 }
 
 # Set and access working directory
-set PROJECT_DIR /home/hwang/EDA/projects/Lab_PnR_Synopsys_Simp
+set PROJECT_DIR /home/hwang/EDA/projects/SingleCoreSys
 cd $PROJECT_DIR
 
 # creates three directories relative to DC's working directory
 file mkdir work_dc syn reports_dc
+# maps a logical design library name (WORK) to a physical directory path in the file system (./work_dc)
 define_design_lib WORK -path ./work_dc
 
 lappend search_path $PROJECT_DIR/std_cells
-lappend search_path $PROJECT_DIR/rtl
+lappend search_path $PROJECT_DIR/sim
+lappend search_path $PROJECT_DIR/tcl
 
 # Map at SS. FC will later analyze the result at SS, TT and FF.
 # Synthesize using the slow-corner standard-cell library. This DC run performs single-corner optimization.
@@ -31,19 +33,17 @@ set target_library [list NangateOpenCellLibrary_slow.db]
 # while concat return 3 elements *, slow.db, fast.db
 set link_library [concat [list *] $target_library]
 
+set TOP lab4_sys_SingleCoreSys
+set RTL lab4_sys/SingleCoreSys.v
+set NAME SingleCoreSys
+
 # analyze + elaborate (parse the file + build design hierarchy) instead of read_file (legacy flow)
-analyze -format verilog {
-    Decoder.v 
-    ARITHMETIC_UNIT.v 
-    LOGIC_UNIT.v
-    SHIFT_UNIT.v 
-    CMP_UNIT.v 
-    ALU_TOP.v
-}
+analyze -format sverilog -define SYNTHESIS [list $RTL]
+
 # also resolves Verilog parameters/generates
-elaborate ALU_TOP
+elaborate $TOP
 # link act on current design, so explictly set this beforehand
-current_design ALU_TOP
+current_design $TOP
 # Resolves the references to instantiated submodules and library cells
 link
 
@@ -89,7 +89,7 @@ compile
 # change_names can normalize it to a Verilog-compatible identifier
 # - -rules verilog: Apply Verilog naming conventions.
 # - -hierarchy: Apply the rules throughout the entire design hierarchy, not just the current level.
-change_names -rules verilog -hierarchy
+change_names -rules sverilog -hierarchy
 
 # check if there is any missing or problematic timing constraints
 check_timing                                > reports_dc/timing_check.rpt
@@ -98,5 +98,5 @@ report_area -hierarchy                      > reports_dc/area.rpt
 report_power -hierarchy                     > reports_dc/power.rpt
 report_constraint -all_violators            > reports_dc/constraints.rpt
 
-write -format verilog -hierarchy -output syn/ALU_TOP_mapped.v
-write_sdc syn/ALU_TOP_mapped.sdc
+write -format sverilog -hierarchy -output syn/${NAME}_mapped.v
+write_sdc syn/${NAME}_mapped.sdc

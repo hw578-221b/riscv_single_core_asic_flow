@@ -1,12 +1,12 @@
 # This script is the final signal-routing and post-route optimization stage
 
-save_block -as ALU_TOP_routed
-open_block ALU_TOP_routed
+save_block -as ${NAME}_routed
+open_block ${NAME}_routed
 
-# builds the detailed signal interconnect
+# performs the physical routing of wires
 route_auto
 
-# post-route timing and physical optimization:
+# performs post-route optimization to fix timing, power, and design rule violations
 # Cell resizing	     Replace a weak driver with a stronger cell to improve delay
 # Buffer insertion	 Improve slow or high-capacitance nets
 # Hold repair	     Insert delay or otherwise adjust short paths

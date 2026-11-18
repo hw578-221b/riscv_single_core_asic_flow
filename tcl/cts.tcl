@@ -1,11 +1,11 @@
-save_block -as ALU_TOP_cts
-open_block ALU_TOP_cts
+save_block -as ${NAME}_cts
+open_block ${NAME}_cts
 
 # Build, route and optimize the clock tree using FC's default CTS settings.
 # Perform all three command at once:
 # build_clock: Build and optimize the buffered clock tree
 # route_clock: Detail-route the synthesized clock nets (routes the clock nets, not all the data/signal nets)
-# final_optimization: Perform post-CTS timing, placement and global-route-based optimization (so routing path will show up but without assigned width)
+# final_optimization: Perform ***post-CTS STA***, placement and global-route-based optimization (so routing path will show up but without assigned width)
 clock_opt
 
 # What is CTS trying to optimize?
@@ -26,6 +26,9 @@ clock_opt
 #     set_propagated_clock [all_clocks]
 # }
 
+# Check placement congestion before investing in CTS and detailed routing
+report_congestion -rerun_global_router > reports_fc/cts_congestion.rpt
+
 # Because CTS can insert additional clock-tree cells.
 connect_pg_net -net VDD [get_pins -physical_context */VDD]
 connect_pg_net -net VSS [get_pins -physical_context */VSS]
@@ -38,12 +41,26 @@ check_pg_drc
 # check for design violations
 check_clock_tree > reports_fc/check_clock_tree.rpt
 
+# report CTS constraints (configurations)
+# if max_transition, max_capacitance, target_skew, etc. not set before clock_opt, then FC uses default configuration
+report_clock_settings -type configurations > reports_fc/CTS_constraints.rpt
+
+# checks the timing-analysis setup, including missing clocks, missing I/O constraints, and unconstrained endpoints
+check_timing > reports_fc/postCTS_check_timing.rpt
+
+# update timing first before analyzing timing!
+update_timing -full
+
+# Analyze the design after clock implementation
+foreach scenario {FUNC_SS FUNC_TT FUNC_FF} {
+    current_scenario $scenario
+    # Perform & report post-CTS STA
+    report_timing -scenarios $scenario -delay_type max -max_paths 10 -transition_time > reports_fc/postCTS_${scenario}_setup.rpt
+    report_timing -scenarios $scenario -delay_type min -max_paths 10 -transition_time > reports_fc/postCTS_${scenario}_hold.rpt
+}
+
 # QoR stands for Quality of Results. This command summarizes how well the clock tree was implemented.
 report_clock_qor -show_paths -largest 2 > reports_fc/cts_clock_qor.rpt
-
-# report CTS constraints (configurations)
-# if max_transition, max_capacitance, target_skew, etc. not set before clock_opt, then use default configuration
-report_clock_settings -type configurations
 
 save_block
 save_lib

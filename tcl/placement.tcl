@@ -1,7 +1,7 @@
 # performs standard-cell placement and optimization
 
-save_block -as ALU_TOP_placement
-open_block ALU_TOP_placement
+save_block -as ${NAME}_placement
+open_block ${NAME}_placement
 
 # Allow the library's tie-high/low cells to drive logic constants.Nangate marks these cells dont_use/dont_touch by default.
 set tie_cells [get_lib_cells {*/LOGIC1_X1 */LOGIC0_X1}]
@@ -29,6 +29,10 @@ legalize_placement
 # legalize_placement is a repair command: It attempts to fix illegal cell placements.
 # check_legality is a verification command: It checks for placement violations but does not fix them.
 check_legality
+
+# check congestion, check again after CTS
+# those stages are earlier opportunities to change core utilization or placement before spending time on detailed routing
+report_congestion -rerun_global_router > reports_fc/placement_congestion.rpt
 
 # reconnect VDD/VSS after placement, as place_opt and add_tie_cells can introduce new standard-cell instances
 # But this command does not create new physical metal routes or vias!!!! so check connectivity

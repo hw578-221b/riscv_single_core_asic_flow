@@ -136,6 +136,8 @@
 // Helper Tasks
 //------------------------------------------------------------------------
 
+`ifndef SYNTHESIS
+
 module lab2_proc_tinyrv2_encoding_InstTasks();
 
   //----------------------------------------------------------------------
@@ -359,6 +361,8 @@ module lab2_proc_tinyrv2_encoding_InstTasks();
 
 endmodule
 
+`endif /* SYNTHESIS */
+
 //------------------------------------------------------------------------
 // Unpack instruction
 //------------------------------------------------------------------------
@@ -385,7 +389,7 @@ module lab2_proc_tinyrv2_encoding_InstUnpack
   assign rs1      = inst[`TINYRV2_INST_RS1];
   assign rs2      = inst[`TINYRV2_INST_RS2];
   assign funct3   = inst[`TINYRV2_INST_FUNCT3];
-  assign funct7   - inst[`TINYRV2_INST_FUNCT7];
+  assign funct7   = inst[`TINYRV2_INST_FUNCT7];
   assign csr      = inst[`TINYRV2_INST_CSR];
 
 endmodule

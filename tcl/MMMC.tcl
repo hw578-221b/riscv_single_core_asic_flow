@@ -61,6 +61,7 @@ foreach scenario {FUNC_SS FUNC_TT FUNC_FF} {
     # Active-high reset remains deasserted during normal execution.
     set_switching_activity -static_probability 0.0 -toggle_rate 0.0 [get_ports reset]
 
+    # this command does not run any analysis itself, it only configures which corners/modes are visible, while the report_* does the full analysis & reporting.
     # syntax: set_scenario_status <scenario_name> <analysis_options>
     # -active true: Enable the scenario's selected analysis/optimization
     # for example: -leakage_power true: Enable leakage-power analysis

@@ -104,7 +104,8 @@ module lab3_mem_CacheAltDpath
   );
 
   logic [15:0] wb_en, wben_mux_out;
-
+  logic [3:0] word_offset;
+  
   // wben_dec
   assign wb_en = 16'h000f << word_offset;
 
@@ -120,7 +121,6 @@ module lab3_mem_CacheAltDpath
   // address mapping
   //=========================================================================
 
-  logic [3:0] word_offset;
   logic [2:0] index;
   logic [1:0] bank;
   logic [24:0] tag;

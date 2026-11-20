@@ -264,7 +264,7 @@ module lab3_mem_CacheAltCtrl
 
   logic tag_array_wen, valid_bits_write_en, dirty_bits_write_en;
   
-  task cs
+  function automatic void cs
   (
     input logic       cs_cachereq_rdy,
     input logic       cs_cacheresp_val,
@@ -309,7 +309,7 @@ module lab3_mem_CacheAltCtrl
     dirty_bit_in              = cs_dirty_bit_in;
     dirty_bits_write_en       = cs_dirty_bits_write_en;
   end
-  endtask
+  endfunction
    
   // cacheresp_type logic
   assign cacheresp_type = cachereq_type;

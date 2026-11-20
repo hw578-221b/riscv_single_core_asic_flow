@@ -1,21 +1,58 @@
-#=========================================================================
-# Git Ignore Files
-#=========================================================================
-# We explicitly ignore a default build directory, the autoconf generated
-# autom4te.cache directory, and automatically generated python files.
-# This makes it easy to do a clean build under the source directory and
-# still have it appear clean to git.
+# Generated files stay on disk; these rules only exclude untracked files from Git.
+# Keep RTL/tests, Tcl scripts, documentation, and library source/technology files.
+# Copy selected reports/figures into results/ for publication (no blanket *.rpt
+# or *.pdf rule). Archive restart databases outside Git before cleaning builds.
 
-.\#*
+# Synopsys working databases, compiled reference libraries, and caches
+/work_dc/
+/work_fc/
+/CLIBs/
+/alib-*/
+*.alib
+*.ddc
+/std_cells/*.db
+
+# Default synthesis/implementation outputs and raw reports
+/syn/
+/outputs/
+/reports_dc/
+/reports_dc_*/
+/reports_fc/
+/reports_fc_*/
+
+# Tool logs, session data, and Formality guidance (keep SVF in run archives
+# if you intend to perform equivalence checking)
+*.log
+*.log.*
+*.svf
+*.ems
+/fc_output.txt
+/moduleparamid
+/filenames.log
+/synopsys_stack_trace*
+
+# Simulation waveforms/activity dumps: retain important runs outside Git
+*.vcd
+*.vpd
+*.fsdb
+*.fst
+*.saif
+
+# Existing simulation/test build exclusions
 scripts/work
 build*/
 autom4te.cache/
 __pycache__/
 *.py[cod]
-.DS_Store
 .cache/
 *.pytest_cache/
+*/staff-4750/*
+
+# Editor and operating-system temporary files
+.DS_Store
+Thumbs.db
+.#*
 *~
 .lock*
 *.swp
-*/staff-4750/*
+*.swo

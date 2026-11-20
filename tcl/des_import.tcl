@@ -1,9 +1,7 @@
 set NAME SingleCoreSys
-save_block -as ${NAME}_import
-open_block ${NAME}_import
 
 # Set and access working directory
-set PROJECT_DIR /home/hwang/EDA/projects/Lab_PnR_Synopsys_Simp
+set PROJECT_DIR /home/hwang/EDA/projects/single-core-asic-flow
 cd $PROJECT_DIR
 
 lappend search_path $PROJECT_DIR/std_cells
@@ -59,6 +57,7 @@ connect_pg_net -net VSS [get_pins -physical_context */VSS]
 # multi-mode, multi-corner timing setup
 source MMMC.tcl
 
-save_block
+save_block -as ${NAME}_import
 # save design library including the modified unsaved blocks inside
 save_lib
+open_block ${NAME}_import

@@ -5,7 +5,7 @@ if {![file exists std_cells/NangateOpenCellLibrary_slow.db]} {
 }
 
 # Set and access working directory
-set PROJECT_DIR /home/hwang/EDA/projects/SingleCoreSys
+set PROJECT_DIR /home/hwang/EDA/projects/single-core-asic-flow
 cd $PROJECT_DIR
 
 # creates three directories relative to DC's working directory
@@ -40,7 +40,7 @@ set NAME SingleCoreSys
 # analyze + elaborate (parse the file + build design hierarchy) instead of read_file (legacy flow)
 analyze -format sverilog -define SYNTHESIS [list $RTL]
 
-# also resolves Verilog parameters/generates
+# also resolves HDL parameters/generates
 elaborate $TOP
 # link act on current design, so explictly set this beforehand
 current_design $TOP
@@ -48,7 +48,7 @@ current_design $TOP
 link
 
 # performs structural consistency checks
-check_design > reports_dc/syn_check.rpt
+check_design > reports_dc/syn_check_precompile.rpt
 
 source constraints.tcl
 
@@ -83,20 +83,43 @@ source constraints.tcl
 # -buffer_constants: buffer the constant generator () with buffers 
 set_fix_multiple_port_nets -all -buffer_constants
 
-compile
+
+# -sequential_cell latch: Requests latch-based gating
+# positive_edge_logic integrated: Requests an integrated library clock-gating cell for rising-edge-triggered registers
+# -minimum_bitwidth 8: adding ICG to register groups with at least 8 bits sharing a suitable enable (adding too many ICG cells also waste power)
+set_clock_gating_style -sequential_cell latch -positive_edge_logic integrated -minimum_bitwidth 8
+
+# -no_autoungroup keeps automatic ungrouping from removing your RTL hierarchy
+# -gate_clock add ICG cells to gate switching whenever FF enable pin is low, save internal power 
+compile_ultra -no_autoungroup -gate_clock
 
 # After synthesis, DC may produce internal identifiers containing characters that need to be escaped or renamed for convenient Verilog output, like alu/logic$1.
 # change_names can normalize it to a Verilog-compatible identifier
 # - -rules verilog: Apply Verilog naming conventions.
 # - -hierarchy: Apply the rules throughout the entire design hierarchy, not just the current level.
-change_names -rules sverilog -hierarchy
+change_names -rules verilog -hierarchy
+
+# performs another structural consistency checks after compile
+check_design > reports_dc/syn_check_postcompile.rpt
 
 # check if there is any missing or problematic timing constraints
-check_timing                                > reports_dc/timing_check.rpt
-report_timing -delay_type max -max_paths 20 > reports_dc/timing.rpt
-report_area -hierarchy                      > reports_dc/area.rpt
-report_power -hierarchy                     > reports_dc/power.rpt
-report_constraint -all_violators            > reports_dc/constraints.rpt
+check_timing > reports_dc/timing_check.rpt
 
-write -format sverilog -hierarchy -output syn/${NAME}_mapped.v
+# -ungated: identifies ungated registers and reports reasons, such as always-enabled registers or insufficient group width.
+report_clock_gating -ungated > reports_dc/clock_gating.rpt
+
+# -capacitance: Adds a Cap column showing the total lumped capacitive load (wire + input pin)
+# -nets: showing the actual wire (net) names connecting each gate
+# -input_pins: Displays both the input pin except for output pin for every cell along the path. 
+report_timing -delay_type max -max_paths 15 -input_pins > reports_dc/timing.rpt
+report_area -hierarchy > reports_dc/area.rpt
+# if there is no set_switching_activity, then DC calculates power based on default: -static_probability 0.5 -toggle_rate 0.1 
+report_power -hierarchy > reports_dc/power.rpt
+report_constraint -all_violators > reports_dc/constraints.rpt
+
+# DC accepts sverilog input in analyze, but it's not a supported write format
+write -format verilog -hierarchy -output syn/${NAME}_mapped.v
+# write design checkpoint file
+write -format ddc -hierarchy -output syn/${NAME}_mapped.ddc
+# write design constraint file
 write_sdc syn/${NAME}_mapped.sdc

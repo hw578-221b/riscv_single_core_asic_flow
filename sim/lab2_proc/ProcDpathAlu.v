@@ -26,7 +26,7 @@ module lab2_proc_ProcDpathAlu
       4'd0    : out = in0 + in1;                                // ADD
       4'd1    : out = in0 - in1;                                // SUB
       4'd2    : out = ($signed(in0) < $signed(in1));            // LT
-      4'd3    : out = $signed(in0) >>> in1[4:0];                // SRA
+      4'd3    : out = $unsigned($signed(in0) >>> in1[4:0]);     // SRA
       4'd4    : out = in0 >> in1[4:0];                          // SRL
       4'd5    : out = in0 << in1[4:0];                          // SLL
       4'd6    : out = in0 & in1;                                // AND

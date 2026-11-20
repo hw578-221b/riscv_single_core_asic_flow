@@ -151,6 +151,24 @@ module lab2_proc_ProcAltCtrl
   logic squash_F;
   logic squash_D;
 
+  // Pipeline registers
+
+  logic [31:0] inst_X;
+  logic [1:0]  dmem_type_X;
+  logic        wb_result_sel_X;
+  logic        rf_wen_X;
+  logic [4:0]  rf_waddr_X;
+  logic        proc2mngr_val_X;
+  logic        stats_en_wen_X;
+  logic [2:0]  br_type_X;
+
+  logic [31:0] inst_M;
+  logic [1:0]  dmem_type_M;
+  logic        rf_wen_M;
+  logic [4:0]  rf_waddr_M;
+  logic        proc2mngr_val_M;
+  logic        stats_en_wen_M;
+
   //----------------------------------------------------------------------
   // F stage
   //----------------------------------------------------------------------
@@ -346,7 +364,7 @@ module lab2_proc_ProcAltCtrl
   logic       mngr2proc_rdy_D;
   logic       stats_en_wen_D;
 
-  task cs
+  function automatic void cs
   (
     input logic       cs_inst_val,
     input logic [2:0] cs_br_type,
@@ -379,7 +397,7 @@ module lab2_proc_ProcAltCtrl
     csrr_D          = cs_csrr;
     csrw_D          = cs_csrw;
   end
-  endtask
+  endfunction
 
   // Control signals table
   always_comb begin
@@ -598,19 +616,12 @@ module lab2_proc_ProcAltCtrl
   //----------------------------------------------------------------------
   // X stage
   //----------------------------------------------------------------------
+  
+  logic is_jalr_X;
 
   // Register enable logic
 
   assign reg_en_X = !stall_X;
-
-  logic [31:0] inst_X;
-  logic [1:0]  dmem_type_X;
-  logic        wb_result_sel_X;
-  logic        rf_wen_X;
-  logic [4:0]  rf_waddr_X;
-  logic        proc2mngr_val_X;
-  logic        stats_en_wen_X;
-  logic [2:0]  br_type_X;
 
   // Pipeline registers
 
@@ -707,7 +718,6 @@ module lab2_proc_ProcAltCtrl
   logic osquash_X_bne;
   assign osquash_X_bne = val_X && !stall_X && pc_redirect_X;
 
-  logic is_jalr_X;
   assign is_jalr_X = (inst_X ==? `TINYRV2_INST_JALR);
 
   // osquash due to PC jump instruction in X stage (jalr)
@@ -742,15 +752,6 @@ module lab2_proc_ProcAltCtrl
   // Register enable logic
 
   assign reg_en_M  = !stall_M;
-
-  logic [31:0] inst_M;
-  logic [1:0]  dmem_type_M;
-  logic        rf_wen_M;
-  logic [4:0]  rf_waddr_M;
-  logic        proc2mngr_val_M;
-  logic        stats_en_wen_M;
-
-  // Pipeline register
 
   always_ff @( posedge clk )
     if ( reset ) begin

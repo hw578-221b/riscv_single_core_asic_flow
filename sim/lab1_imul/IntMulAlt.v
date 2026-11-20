@@ -29,7 +29,7 @@ module TrailingZeroCounter32 (
     // priority encoder logic !!!
     for ( i = 0; i < 32; i = i + 1 ) begin
       if ( all_zero && in[i] ) begin
-        count = i;
+        count = i[4:0];
         all_zero = 1'b0;
       end
     end
@@ -122,7 +122,7 @@ module dpath (
   vc_RightLogicalShifter
   #(
     .p_nbits       (32),
-    .p_shamt_nbits (6)
+    .p_shamt_nbits (5)
   )
   b_shift
   (
@@ -134,7 +134,7 @@ module dpath (
   vc_LeftLogicalShifter
   #(
     .p_nbits       (32),
-    .p_shamt_nbits (6)
+    .p_shamt_nbits (5)
   )
   a_shift
   (

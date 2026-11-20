@@ -91,10 +91,6 @@ module lab2_proc_ProcAltDpath
   localparam c_reset_vector = 32'h200;
   localparam c_reset_inst   = 32'h00000000;
 
-  // Fetch address
-
-  assign imem_reqstream_msg_addr = pc_next_F;
-
   //--------------------------------------------------------------------
   // F stage
   //--------------------------------------------------------------------
@@ -104,6 +100,10 @@ module lab2_proc_ProcAltDpath
   logic [31:0] pc_plus4_F;
   logic [31:0] br_target_X;
   logic [31:0] jal_target_D;
+  
+  // Fetch address
+  
+  assign imem_reqstream_msg_addr = pc_next_F;
 
   vc_EnResetReg#(32, c_reset_vector - 32'd4) pc_reg_F
   (
@@ -119,6 +119,8 @@ module lab2_proc_ProcAltDpath
     .in   (pc_F),
     .out  (pc_plus4_F)
   );
+  
+  logic [31:0] jalr_target_x;
 
   vc_Mux4#(32) pc_sel_mux_F
   (
@@ -196,6 +198,9 @@ module lab2_proc_ProcAltDpath
 
   logic [31:0] op1_byp_out, op2_byp_out;
   logic [31:0] bypass_from_X, bypass_from_M, bypass_from_W;
+  logic [31:0] ex_result_X;
+  logic [31:0] wb_result_M;
+  logic [31:0] wb_result_W;
 
   assign bypass_from_X = ex_result_X;
   assign bypass_from_M = wb_result_M;
@@ -335,10 +340,7 @@ module lab2_proc_ProcAltDpath
 
 
   logic [31:0] alu_result_X;
-  logic [31:0] ex_result_X;
   logic [31:0] imul_result_X;
-
-  logic [31:0] jalr_target_x;
 
   assign jalr_target_x = alu_result_X;
 
@@ -394,7 +396,6 @@ module lab2_proc_ProcAltDpath
   );
 
   logic [31:0] dmem_result_M;
-  logic [31:0] wb_result_M;
 
   assign dmem_result_M = dmem_respstream_msg_data;
 
@@ -409,8 +410,6 @@ module lab2_proc_ProcAltDpath
   //--------------------------------------------------------------------
   // W stage
   //--------------------------------------------------------------------
-
-  logic [31:0] wb_result_W;
 
   vc_EnResetReg#(32, 0) wb_result_reg_W
   (

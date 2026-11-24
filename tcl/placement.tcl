@@ -28,7 +28,7 @@ legalize_placement
 # Detect remaining placement legality violations
 # legalize_placement is a repair command: It attempts to fix illegal cell placements.
 # check_legality is a verification command: It checks for placement violations but does not fix them.
-check_legality
+check_legality > reports_fc/placement_legality_check.rpt
 
 # check congestion, check again after CTS
 # those stages are earlier opportunities to change core utilization or placement before spending time on detailed routing

@@ -17,8 +17,8 @@ write_verilog -hierarchy all -exclude {leaf_module_declarations} outputs/${NAME}
 # .gds	    Actual layer geometry and hierarchy	Physical layout inspection, verification, manufacturing handoff
 write_def outputs/${NAME}.def
 
-file mkdir report_fc/final_report
-set PATH report_fc/final_report
+file mkdir reports_fc/final_report
+set PATH reports_fc/final_report
 
 # update timing before exporting parasitics and generating reports!!!!!!!!!!
 update_timing -full
@@ -28,15 +28,15 @@ write_parasitics -format SPEF -output outputs/${NAME}
 
 check_timing > ${PATH}/postRoute_check_timing.rpt
 
-# > is a Synopsys command-interface feature, not a general Tcl language operator
+report_area -hierarchy > ${PATH}/pnr_area.rpt
 
 # Separate timing reports and delay files for SS, TT and FF.
 foreach scenario {FUNC_SS FUNC_TT FUNC_FF} {
     current_scenario $scenario
 
     # Perform & report post-routing STA, those two commands also need -scenarios $scenario to get scenario specific analysis!!
-    report_timing -scenarios $scenario -delay_type max -max_paths 10 -transition_time > ${PATH}/${scenario}_setup.rpt
-    report_timing -scenarios $scenario -delay_type min -max_paths 10 -transition_time > ${PATH}/${scenario}_hold.rpt
+    report_timing -scenarios $scenario -delay_type max -max_paths 10 -transition_time -significant_digits 5 > ${PATH}/${scenario}_setup.rpt
+    report_timing -scenarios $scenario -delay_type min -max_paths 10 -transition_time -significant_digits 5 > ${PATH}/${scenario}_hold.rpt
 
     report_constraints -all_violators > ${PATH}/${scenario}_violations.rpt
     report_power > ${PATH}/${scenario}_power.rpt

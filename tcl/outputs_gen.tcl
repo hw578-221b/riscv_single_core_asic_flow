@@ -17,18 +17,18 @@ write_verilog -hierarchy all -exclude {leaf_module_declarations} outputs/${NAME}
 # .gds	    Actual layer geometry and hierarchy	Physical layout inspection, verification, manufacturing handoff
 write_def outputs/${NAME}.def
 
-file mkdir reports_fc/final_report
-set PATH reports_fc/final_report
+file mkdir reports_fc/report_final
+set PATH reports_fc/report_final
 
 # update timing before exporting parasitics and generating reports!!!!!!!!!!
 update_timing -full
 
 # Export extracted wire resistance/capacitance in SPEF format
-write_parasitics -format SPEF -output outputs/${NAME}
+#write_parasitics -format SPEF -output outputs/${NAME}
 
 check_timing > ${PATH}/postRoute_check_timing.rpt
 
-report_area -hierarchy > ${PATH}/pnr_area.rpt
+report_area -hierarchy > ${PATH}/pnr_final_area.rpt
 
 # Separate timing reports and delay files for SS, TT and FF.
 foreach scenario {FUNC_SS FUNC_TT FUNC_FF} {

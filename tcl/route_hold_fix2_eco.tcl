@@ -1,3 +1,5 @@
+# fix for 50% core utilization rate
+
 # First check the corresponding setup slack before doing timing ECO
 # foreach bit {45 46} {
 #     report_timing -scenarios FUNC_SS -delay_type max \
@@ -68,3 +70,4 @@ save_lib
 #             "dcache/dpath/memresp_data_reg/q_reg_${bit}_/D"] \
 #         -max_paths 5 -significant_digits 5 >> ${PATH1}/FUNC_FF_eco_hold_path.rpt
 # }
+

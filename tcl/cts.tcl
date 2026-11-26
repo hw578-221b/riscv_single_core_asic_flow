@@ -38,19 +38,20 @@ check_clock_tree > reports_fc/check_clock_tree.rpt
 
 # report CTS constraints (configurations)
 # if max_transition, max_capacitance, target_skew, etc. not set before clock_opt, then FC uses default configuration
-report_clock_settings -type configurations > reports_fc/cts_constraints.rpt
+report_clock_settings -type configurations > reports_fc/postCTS_constraints.rpt
 
 # checks the timing-analysis setup, including missing clocks, missing I/O constraints, and unconstrained endpoints
 check_timing > reports_fc/postCTS_check_timing.rpt
 
 # updated postCTS clock uncertainty constraint, remove clock skew part based on the postCTS timing report
-# setup clock skew: ~0.13, but account for jitter: reduce from 0.13 to 0.05
+# setup clock skew: ~0.1, but account for jitter: reduce from 0.13 to 0.08
 # real jitter information need PLL/oscillator specification
 # hold clock skew: ~0.04, so reduce from 0.07 to 0.03
-set postcts_setup_uncertainty 0.05
+set postcts_setup_uncertainty 0.08
 set postcts_hold_uncertainty  0.03
 
 foreach scenario {FUNC_SS FUNC_TT FUNC_FF} {
+  current_scenario $scenario
   set_clock_uncertainty -setup $postcts_setup_uncertainty [get_clocks CLK]
   set_clock_uncertainty -hold $postcts_hold_uncertainty [get_clocks CLK]
 }
@@ -62,7 +63,7 @@ update_timing -full
 foreach scenario {FUNC_SS FUNC_TT FUNC_FF} {
     current_scenario $scenario
     # Perform & report post-CTS STA
-    report_timing -scenarios $scenario -delay_type max -max_paths 10 -transition_time > reports_fc/postCTS_${scenario}_setup.rpt
+    report_timing -scenarios $scenario -delay_type max -max_paths 10 -transition_time -significant_digits 5 > reports_fc/postCTS_${scenario}_setup.rpt
     report_timing -scenarios $scenario -delay_type min -max_paths 10 -transition_time -significant_digits 5 > reports_fc/postCTS_${scenario}_hold.rpt
 }
 

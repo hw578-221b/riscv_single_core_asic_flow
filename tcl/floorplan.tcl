@@ -21,7 +21,7 @@ initialize_floorplan -core_utilization 0.50 -side_ratio {1 1} -core_offset 5
 set_ignored_layers -min_routing_layer metal2 -max_routing_layer metal6
 
 # report relavant dimensions useful for power planning
-report_design -floorplan
+report_design -floorplan > reports_fc/floorplan_info.rpt
 
 save_block
 save_lib

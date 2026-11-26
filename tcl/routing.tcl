@@ -23,7 +23,7 @@ check_pg_missing_vias
 check_pg_drc
 
 # checks the routing result for physical routing problems, not full foundry signoff DRC or LVS check
-check_routes > reports_fc/final_routes.rpt
+check_routes > reports_fc/final_routes_check.rpt
 
 save_block
 save_lib

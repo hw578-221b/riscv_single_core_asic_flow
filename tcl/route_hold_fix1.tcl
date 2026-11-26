@@ -1,3 +1,5 @@
+# this fix doesn't work, the two hold violations still there after optimizing
+
 # Preserve the existing implementation.
 save_block -as SingleCoreSys_hold_fix
 open_block SingleCoreSys_hold_fix
@@ -24,5 +26,3 @@ foreach scenario {FUNC_SS FUNC_TT FUNC_FF} {
 
     report_constraints -all_violators > ${PATH1}/${scenario}_violations.rpt
 }
-
-# this fix doesn't work, the two hold violations still there after optimizing
